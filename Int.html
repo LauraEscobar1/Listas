@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sweet Logistics - Final Workshop</title>
+    <style>
+        :root {
+            --pink-bg: #fff0f6;
+            --pink-light: #ffdeeb;
+            --pink-main: #f06292;
+            --pink-dark: #ad1457;
+            --white: #ffffff;
+        }
+
+        body {
+            background-color: var(--pink-bg);
+            font-family: 'Segoe UI', sans-serif;
+            color: var(--pink-dark);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 35px;
+            box-shadow: 0 10px 30px rgba(240, 98, 146, 0.15);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 3px dotted var(--pink-main);
+            margin-bottom: 25px;
+        }
+
+        h1 { color: var(--pink-main); margin-bottom: 5px; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .column {
+            background: var(--pink-bg);
+            border: 2px solid var(--pink-light);
+            border-radius: 20px;
+            padding: 15px;
+            min-height: 500px;
+        }
+
+        .col-title {
+            background: var(--pink-main);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-bottom: 15px;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--pink-main);
+            font-size: 0.8em;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        button {
+            background: var(--pink-main);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        button:hover { background: var(--pink-dark); }
+        
+        .input-bar {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid var(--pink-light);
+            border-radius: 10px;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌸 Sweet Logistics Dashboard 🌸</h1>
+        <p>Object-Oriented Programming | 4 Classes | 20 Steps</p>
+    </header>
+
+    <div class="input-bar">
+        <input type="text" id="cust" placeholder="Customer Name">
+        <input type="text" id="prod" placeholder="Product">
+        <button onclick="mainApp.createNewOrder()" style="width: 150px;">Start Process</button>
+    </div>
+
+    <div class="dashboard">
+        <div class="column">
+            <div class="col-title">1. INVENTORY MGR</div>
+            <div id="list-inv"></div>
+        </div>
+        <div class="column">
+            <div class="col-title">2. SALES DEPT</div>
+            <div id="list-sales"></div>
+        </div>
+        <div class="column">
+            <div class="col-title">3. FINANCE DIV</div>
+            <div id="list-fin"></div>
+        </div>
+        <div class="column">
+            <div class="col-title">4. SHIPPING SVC</div>
+            <div id="list-ship"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- CLASS 1: DATA ENTITY ---
+    class Order {
+        constructor(id, customer, product) {
+            this.id = id;
+            this.customer = customer;
+            this.product = product;
+            this.status = "Validating";
+            this.tracking = "Pending";
+        }
+    }
+
+    // --- CLASS 2: INVENTORY ---
+    class InventoryManager {
+        constructor() { this.items = []; }
+    }
+
+    // --- CLASS 3: SALES ---
+    class SalesDepartment {
+        constructor() { this.items = []; }
+        // STEP 9: Analyze Quote Response
+        analyzeQuote(id, isAccepted) {
+            const idx = this.items.findIndex(o => o.id === id);
+            if (idx !== -1) {
+                let order = this.items.splice(idx, 1)[0];
+                if (isAccepted) {
+                    order.status = "Accepted";
+                    return order;
+                }
+            }
+            return null;
+        }
+    }
+
+    // --- CLASS 3.5: FINANCE (The missing one!) ---
+    class FinanceModule {
+        constructor() { this.items = []; }
+        processPayment(order) {
+            order.status = "Paid";
+            this.items.push(order); // Step 12 & 13
+        }
+    }
+
+    // --- CLASS 4: SHIPPING ---
+    class ShippingService {
+        constructor() { this.items = []; }
+        generateLabel(order) {
+            order.status = "Shipped";
+            order.tracking = "TRK-" + Math.floor(Math.random()*899 + 100);
+            this.items.push(order); // Steps 14-19
+        }
+    }
+
+    // --- MAIN CLASS ---
+    class Main {
+        constructor() {
+            this.clInventory = new InventoryManager();
+            this.clSales = new SalesDepartment();
+            this.clFinance = new FinanceModule();
+            this.clShipping = new ShippingService();
+        }
+
+        createNewOrder() {
+            const c = document.getElementById('cust').value;
+            const p = document.getElementById('prod').value;
+            if(!c || !p) return;
+            const o = new Order(Date.now(), c, p);
+            this.clInventory.items.push(o);
+            this.render();
+        }
+
+        moveToSales(id) {
+            const idx = this.clInventory.items.findIndex(o => o.id === id);
+            const o = this.clInventory.items.splice(idx, 1)[0];
+            o.status = "Quoting";
+            this.clSales.items.push(o);
+            this.render();
+        }
+
+        doStep9(id, ok) {
+            const processed = this.clSales.analyzeQuote(id, ok);
+            if (processed) this.clFinance.processPayment(processed);
+            this.render();
+        }
+
+        finalize(id) {
+            const idx = this.clFinance.items.findIndex(o => o.id === id);
+            const o = this.clFinance.items.splice(idx, 1)[0];
+            this.clShipping.generateLabel(o);
+            this.render();
+        }
+
+        render() {
+            const ui = (id, list, btn) => {
+                document.getElementById(id).innerHTML = list.map(o => `
+                    <div class="order-card">
+                        <b>ID:</b> ${o.id}<br><b>Customer:</b> ${o.customer}<br>
+                        <b>Status:</b> ${o.status}<br>
+                        ${o.tracking !== 'Pending' ? `<b>Track:</b> ${o.tracking}` : ''}
+                        ${btn(o)}
+                    </div>
+                `).join('');
+            };
+
+            ui('list-inv', this.clInventory.items, (o) => `<button onclick="mainApp.moveToSales(${o.id})">Generate Quote</button>`);
+            ui('list-sales', this.clSales.items, (o) => `
+                <button onclick="mainApp.doStep9(${o.id}, true)" style="background:#4caf50">Accept (Step 9)</button>
+                <button onclick="mainApp.doStep9(${o.id}, false)" style="background:#f44336">Reject</button>
+            `);
+            ui('list-fin', this.clFinance.items, (o) => `<button onclick="mainApp.finalize(${o.id})">Verify Payment</button>`);
+            ui('list-ship', this.clShipping.items, (o) => `✨ <i>Order Sent</i>`);
+        }
+    }
+
+    const mainApp = new Main();
+</script>
+</body>
+</html>
